@@ -1,0 +1,27 @@
+{
+  "name": "leaflet-routing-machine-here_v8",
+  "version": "1.0.0",
+  "description": "Beta Here API V8 for leaflet routing machine",
+  "main": "dist/lrm-here.js",
+  "directories": {
+    "example": "examples"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PavlaQ/lrm-here-api-v8.git"
+  },
+  "keywords": [
+    "lrm-here"
+  ],
+  "author": "Paweł Niekłań",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PavlaQ/lrm-here-api-v8/issues"
+  },
+  "homepage": "https://github.com/PavlaQ/lrm-here-api-v8#readme"
+}
