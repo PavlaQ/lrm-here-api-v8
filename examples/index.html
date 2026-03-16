@@ -2,17 +2,23 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Leaflet Here Example</title>
-    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
-    <link rel="stylesheet" href="https://rawgit.com/perliedman/leaflet-routing-machine/master/dist/leaflet-routing-machine.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet Routing Machine + HERE API v8</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <link rel="stylesheet" href="index.css" />
 </head>
 <body>
+    <div id="api-key-form" class="api-key-form">
+        <h3>HERE API Key</h3>
+        <input type="text" id="api-key-input" placeholder="Wpisz swój HERE API Key" />
+        <button id="api-key-submit">Zapisz i uruchom</button>
+        <p class="hint">Klucz zostanie zapisany w session storage</p>
+    </div>
     <div id="map" class="map"></div>
-    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
-    <script src="https://rawgit.com/perliedman/leaflet-routing-machine/master/dist/leaflet-routing-machine.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
     <script src="../dist/lrm-here.js"></script>
-    <script src="Control.Geocoder.js"></script>
     <script src="index.js"></script>
 </body>
 </html>
