@@ -3,16 +3,18 @@ html, body {
     padding: 0;
     height: 100%;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px;
 }
 
 .map {
     position: fixed;
     top: 0;
-    left: 0;
+    left: 280px;
     right: 0;
     bottom: 0;
 }
 
+/* API Key Form */
 .api-key-form {
     position: absolute;
     top: 50%;
@@ -73,24 +75,150 @@ html, body {
     color: #888;
 }
 
-.api-key-control {
-    background: white;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+/* Options Panel */
+.options-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100%;
+    background: #f8f9fa;
+    border-right: 1px solid #ddd;
+    padding: 16px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    z-index: 500;
 }
 
-.api-key-control button {
-    background: none;
+.options-panel.hidden {
+    display: none;
+}
+
+.options-panel h4 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 15px;
+    border-bottom: 2px solid #48dad0;
+    padding-bottom: 8px;
+}
+
+.options-panel hr {
     border: none;
-    color: #e74c3c;
-    cursor: pointer;
-    padding: 0;
-    margin-left: 8px;
+    border-top: 1px solid #ddd;
+    margin: 12px 0;
+}
+
+.option-group {
+    margin-bottom: 10px;
+}
+
+.option-group label {
+    display: block;
+    margin-bottom: 4px;
+    color: #555;
     font-size: 12px;
 }
 
-.api-key-control button:hover {
-    text-decoration: underline;
+.option-group select,
+.option-group input[type="text"],
+.option-group input[type="number"],
+.option-group textarea {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 13px;
+    font-family: monospace;
+}
+
+.option-group textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.option-group .hint {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    color: #888;
+}
+
+.option-group select:focus,
+.option-group input:focus {
+    outline: none;
+    border-color: #48dad0;
+}
+
+.checkbox-label {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px !important;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.btn-primary,
+.btn-secondary {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.btn-primary {
+    background: #48dad0;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #3bc9bf;
+}
+
+.btn-secondary {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #c0392b;
+}
+
+.route-info {
+    margin-top: 16px;
+    padding: 12px;
+    background: white;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.route-info:empty {
+    display: none;
+}
+
+.route-info .label {
+    color: #888;
+}
+
+.route-info .value {
+    font-weight: 600;
+    color: #333;
+}
+
+/* Leaflet overrides */
+.leaflet-routing-container {
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
 }

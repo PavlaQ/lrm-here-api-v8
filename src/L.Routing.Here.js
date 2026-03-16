@@ -84,53 +84,6 @@
 
 	L.Routing = L.Routing || {};
 
-	function is(className, object) {
-		return Object.prototype.toString.call(object) === '[object ' + className + ']';
-	}
-
-	// Encoder for nested URL parameters (e.g. avoid[features][0]=tollRoad)
-	var DataEncoder = function () {
-		this.levels = [];
-		this.actualKey = null;
-	};
-
-	DataEncoder.prototype._encode = function (data) {
-		var uriPart = '';
-		var levelsSize = this.levels.length;
-		if (levelsSize) {
-			uriPart = this.levels[0];
-			for (var c = 1; c < levelsSize; c++) {
-				uriPart += '[' + this.levels[c] + ']';
-			}
-		}
-		var finalString = '';
-		if (is('Object', data)) {
-			var keys = Object.keys(data);
-			for (var a = 0; a < keys.length; a++) {
-				var key = keys[a];
-				this.actualKey = key;
-				this.levels.push(this.actualKey);
-				finalString += this._encode(data[key]);
-			}
-		} else if (is('Array', data)) {
-			if (!this.actualKey) throw new Error('Directly passed array does not work');
-			for (var b = 0; b < data.length; b++) {
-				this.levels.push(b);
-				finalString += this._encode(data[b]);
-			}
-		} else {
-			finalString += uriPart + '=' + encodeURIComponent(data) + '&';
-		}
-		this.levels.pop();
-		return finalString;
-	};
-
-	DataEncoder.prototype.encode = function (data) {
-		if (!is('Object', data) || Object.keys(data).length === 0) return '';
-		var encoded = this._encode(data);
-		return encoded ? '&' + encoded.slice(0, -1) : '';
-	};
-
 	L.Routing.Here = L.Class.extend({
 		options: {
 			serviceUrl: 'https://router.hereapi.com/v8/routes',
@@ -139,11 +92,43 @@
 			alternatives: 0,
 			routingMode: 'fast', // fast, short
 			transportMode: 'car', // car, truck, pedestrian, bicycle, scooter
+			language: 'pl-PL', // Language for instructions (e.g. en-US, de-DE)
 			return: ['polyline', 'instructions', 'actions', 'summary'],
+
+			// Convenience flags
+			avoidTolls: false,
+			avoidHighways: false,
+			avoidFerries: false,
+			avoidCHE: false, // Exclude Switzerland (uses exclude[countries])
+
+			// Avoid - route tries to avoid but may use if necessary
+			// https://www.here.com/docs/bundle/routing-api-v8-api-reference/page/index.html
 			avoid: {
-				features: [] // tollRoad, controlledAccessHighway, ferry, tunnel, dirtRoad
+				features: [], // tollRoad, controlledAccessHighway, ferry, tunnel, dirtRoad, carShuttleTrain, difficultTurns
+				areas: [],    // Array of 'bbox:west,south,east,north' or 'polygon:lat1,lng1,lat2,lng2,...'
+				segments: []  // Array of segment IDs
 			},
-			truck: {} // height, width, length, weight, axleCount, etc.
+
+			// Exclude - route will never use these (hard constraint)
+			exclude: {
+				countries: [], // Array of ISO 3166-1 alpha-3 country codes (e.g., ['CHE', 'AUT'])
+				states: []     // Array of state codes
+			},
+
+			// Via options for waypoints
+			via: {
+				stopDuration: 0,      // Stop duration in seconds at via points
+				passThrough: false    // If true, via points are pass-through (no stop)
+			},
+
+			// Vehicle parameters (for all transport modes)
+			vehicle: {}, // speedCap, engineSizeCc
+
+			// Scooter parameters
+			scooter: {}, // allowHighway
+
+			// Truck parameters (deprecated in v8, use vehicle instead for new params)
+			truck: {} // height, width, length, grossWeight, weightPerAxle, axleCount, trailerCount, type, shippedHazardousGoods
 		},
 
 		initialize: function (options) {
@@ -286,13 +271,29 @@
 
 		buildRouteUrl: function (waypoints, options) {
 			var params = [];
+			var viaOptions = this.options.via || {};
 
 			// Origin
 			params.push('origin=' + waypoints[0].latLng.lat + ',' + waypoints[0].latLng.lng);
 
-			// Via points
+			// Via points with options
 			for (var i = 1; i < waypoints.length - 1; i++) {
-				params.push('via=' + waypoints[i].latLng.lat + ',' + waypoints[i].latLng.lng);
+				var viaParam = waypoints[i].latLng.lat + ',' + waypoints[i].latLng.lng;
+
+				// Add via options
+				var viaOpts = [];
+				if (viaOptions.passThrough) {
+					viaOpts.push('passThrough=true');
+				}
+				if (viaOptions.stopDuration > 0) {
+					viaOpts.push('stopDuration=' + viaOptions.stopDuration);
+				}
+
+				if (viaOpts.length > 0) {
+					viaParam += '!' + viaOpts.join('!');
+				}
+
+				params.push('via=' + viaParam);
 			}
 
 			// Destination
@@ -304,45 +305,122 @@
 			params.push('routingMode=' + this.options.routingMode);
 			params.push('return=' + this.options.return.join(','));
 
+			// Language
+			if (this.options.language) {
+				params.push('lang=' + this.options.language);
+			}
+
 			// Alternatives
 			if (this.options.alternatives > 0) {
 				params.push('alternatives=' + this.options.alternatives);
 			}
 
 			// Avoid features
-			var encoder = new DataEncoder();
-			var avoidParams = this._buildAvoidParams();
-			if (Object.keys(avoidParams).length > 0) {
-				var avoidEncoded = encoder.encode({ avoid: avoidParams });
-				if (avoidEncoded) {
-					params.push(avoidEncoded.substring(1));
-				}
+			var avoidFeatures = this._buildAvoidFeatures();
+			if (avoidFeatures.length > 0) {
+				params.push('avoid[features]=' + avoidFeatures.join(','));
+			}
+
+			// Avoid areas
+			var avoidAreas = this._buildAvoidAreas();
+			if (avoidAreas.length > 0) {
+				params.push('avoid[areas]=' + avoidAreas.join('|'));
+			}
+
+			// Avoid segments
+			if (this.options.avoid && this.options.avoid.segments && this.options.avoid.segments.length > 0) {
+				params.push('avoid[segments]=' + this.options.avoid.segments.join(','));
+			}
+
+			// Exclude countries
+			var excludeCountries = this._buildExcludeCountries();
+			if (excludeCountries.length > 0) {
+				params.push('exclude[countries]=' + excludeCountries.join(','));
+			}
+
+			// Exclude states
+			if (this.options.exclude && this.options.exclude.states && this.options.exclude.states.length > 0) {
+				params.push('exclude[states]=' + this.options.exclude.states.join(','));
 			}
 
 			// Truck parameters
 			if (this.options.transportMode === 'truck') {
 				var truckParams = this._buildTruckParams();
-				var truckEncoded = encoder.encode({ truck: truckParams });
-				if (truckEncoded) {
-					params.push(truckEncoded.substring(1));
+				for (var key in truckParams) {
+					if (truckParams.hasOwnProperty(key)) {
+						params.push('truck[' + key + ']=' + encodeURIComponent(truckParams[key]));
+					}
+				}
+			}
+
+			// Vehicle parameters (for all transport modes)
+			var vehicleParams = this._buildVehicleParams();
+			for (var vKey in vehicleParams) {
+				if (vehicleParams.hasOwnProperty(vKey)) {
+					params.push('vehicle[' + vKey + ']=' + encodeURIComponent(vehicleParams[vKey]));
+				}
+			}
+
+			// Scooter parameters
+			if (this.options.transportMode === 'scooter') {
+				var scooterParams = this._buildScooterParams();
+				for (var sKey in scooterParams) {
+					if (scooterParams.hasOwnProperty(sKey)) {
+						params.push('scooter[' + sKey + ']=' + encodeURIComponent(scooterParams[sKey]));
+					}
 				}
 			}
 
 			return this.options.serviceUrl + '?' + params.join('&');
 		},
 
-		_buildAvoidParams: function () {
-			var avoid = {};
-			var features = this.options.avoid.features;
+		_buildAvoidFeatures: function () {
+			var features = [];
 
-			if (features && features.length > 0) {
-				avoid.features = features;
-			}
-			if (this.options.avoid.areas) {
-				avoid.areas = this.options.avoid.areas;
+			// Copy from avoid.features
+			if (this.options.avoid && this.options.avoid.features) {
+				features = features.concat(this.options.avoid.features);
 			}
 
-			return avoid;
+			// Convenience flags
+			if (this.options.avoidTolls && features.indexOf('tollRoad') === -1) {
+				features.push('tollRoad');
+			}
+			if (this.options.avoidHighways && features.indexOf('controlledAccessHighway') === -1) {
+				features.push('controlledAccessHighway');
+			}
+			if (this.options.avoidFerries && features.indexOf('ferry') === -1) {
+				features.push('ferry');
+			}
+
+			return features;
+		},
+
+		_buildAvoidAreas: function () {
+			var areas = [];
+
+			// Copy from avoid.areas
+			if (this.options.avoid && this.options.avoid.areas) {
+				areas = areas.concat(this.options.avoid.areas);
+			}
+
+			return areas;
+		},
+
+		_buildExcludeCountries: function () {
+			var countries = [];
+
+			// Copy from exclude.countries
+			if (this.options.exclude && this.options.exclude.countries) {
+				countries = countries.concat(this.options.exclude.countries);
+			}
+
+			// Convenience flag for Switzerland
+			if (this.options.avoidCHE && countries.indexOf('CHE') === -1) {
+				countries.push('CHE');
+			}
+
+			return countries;
 		},
 
 		_buildTruckParams: function () {
@@ -350,12 +428,46 @@
 			var params = {};
 			var allowedParams = [
 				'height', 'width', 'length', 'grossWeight', 'weightPerAxle',
-				'axleCount', 'trailerCount', 'type', 'shippedHazardousGoods'
+				'axleCount', 'trailerCount', 'type', 'shippedHazardousGoods',
+				'tunnelCategory'
 			];
 
 			for (var key in truck) {
 				if (truck.hasOwnProperty(key) && allowedParams.indexOf(key) !== -1) {
 					params[key] = truck[key];
+				}
+			}
+
+			return params;
+		},
+
+		_buildVehicleParams: function () {
+			var vehicle = this.options.vehicle || {};
+			var params = {};
+			var allowedParams = [
+				'speedCap',      // Speed limit in m/s (e.g., 27.78 = 100 km/h)
+				'engineSizeCc'   // Engine size in cc (for scooter - <51cc = moped)
+			];
+
+			for (var key in vehicle) {
+				if (vehicle.hasOwnProperty(key) && allowedParams.indexOf(key) !== -1) {
+					params[key] = vehicle[key];
+				}
+			}
+
+			return params;
+		},
+
+		_buildScooterParams: function () {
+			var scooter = this.options.scooter || {};
+			var params = {};
+			var allowedParams = [
+				'allowHighway'   // Allow scooter on highways (default: false)
+			];
+
+			for (var key in scooter) {
+				if (scooter.hasOwnProperty(key) && allowedParams.indexOf(key) !== -1) {
+					params[key] = scooter[key];
 				}
 			}
 

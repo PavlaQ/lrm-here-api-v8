@@ -11,10 +11,118 @@
 <body>
     <div id="api-key-form" class="api-key-form">
         <h3>HERE API Key</h3>
-        <input type="text" id="api-key-input" placeholder="Wpisz swój HERE API Key" />
+        <input type="text" id="api-key-input" placeholder="Wpisz swoj HERE API Key" />
         <button id="api-key-submit">Zapisz i uruchom</button>
         <p class="hint">Klucz zostanie zapisany w session storage</p>
     </div>
+
+    <div id="options-panel" class="options-panel hidden">
+        <h4>Opcje routingu</h4>
+
+        <div class="option-group">
+            <label>Punkty trasy (lat,lng na linie):</label>
+            <textarea id="opt-waypoints" rows="4" placeholder="48.1351,11.5820
+47.3769,8.5417
+45.4642,9.1900"></textarea>
+            <small class="hint">Pierwsza linia = start, ostatnia = cel, srodkowe = via</small>
+        </div>
+
+        <hr />
+
+        <div class="option-group">
+            <label>Transport:</label>
+            <select id="opt-transport">
+                <option value="car">Samochod</option>
+                <option value="truck">Ciezarowka</option>
+                <option value="pedestrian">Pieszy</option>
+                <option value="bicycle">Rower</option>
+                <option value="scooter">Skuter</option>
+            </select>
+        </div>
+
+        <div class="option-group">
+            <label>Tryb:</label>
+            <select id="opt-routing-mode">
+                <option value="fast">Najszybsza</option>
+                <option value="short">Najkrotsza</option>
+            </select>
+        </div>
+
+        <div class="option-group">
+            <label>Jezyk:</label>
+            <select id="opt-language">
+                <option value="pl-pl">Polski</option>
+                <option value="en-US">English</option>
+                <option value="de-DE">Deutsch</option>
+            </select>
+        </div>
+
+        <hr />
+
+        <div class="option-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="opt-avoid-tolls" />
+                Unikaj platnych drog
+            </label>
+        </div>
+
+        <div class="option-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="opt-avoid-highways" />
+                Unikaj autostrad
+            </label>
+        </div>
+
+        <div class="option-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="opt-avoid-ferries" />
+                Unikaj promow
+            </label>
+        </div>
+
+        <hr />
+
+        <div class="option-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="opt-avoid-che" />
+                Wyklucz Szwajcarie (CHE)
+            </label>
+        </div>
+
+        <div class="option-group">
+            <label>Wyklucz kraje (ISO3):</label>
+            <input type="text" id="opt-exclude-countries" placeholder="np. AUT,LIE" />
+        </div>
+
+        <hr />
+
+        <div class="option-group">
+            <label>Avoid areas (bbox):</label>
+            <input type="text" id="opt-avoid-areas" placeholder="bbox:w,s,e,n" />
+        </div>
+
+        <hr />
+
+        <div class="option-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="opt-via-passthrough" />
+                Via: pass-through
+            </label>
+        </div>
+
+        <div class="option-group">
+            <label>Via: stop (sek):</label>
+            <input type="number" id="opt-via-stop" value="0" min="0" />
+        </div>
+
+        <hr />
+
+        <button id="btn-recalculate" class="btn-primary">Przelicz trase</button>
+        <button id="btn-clear-key" class="btn-secondary">Wyczysc API Key</button>
+
+        <div id="route-info" class="route-info"></div>
+    </div>
+
     <div id="map" class="map"></div>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
