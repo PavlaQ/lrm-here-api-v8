@@ -1,8 +1,30 @@
 {
-  "name": "lrm-here",
+  "name": "leaflet-routing-machine-here_v8",
   "version": "2.0.0",
   "description": "HERE Routing API v8 plugin for Leaflet Routing Machine",
+  "keywords": [
+    "leaflet",
+    "routing",
+    "here",
+    "lrm",
+    "leaflet-routing-machine",
+    "here-api"
+  ],
+  "homepage": "https://github.com/PavlaQ/lrm-here-api-v8#readme",
+  "bugs": {
+    "url": "https://github.com/PavlaQ/lrm-here-api-v8/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PavlaQ/lrm-here-api-v8.git"
+  },
+  "license": "MIT",
+  "author": "Paweł Niekłań",
+  "type": "commonjs",
   "main": "dist/lrm-here.js",
+  "directories": {
+    "example": "examples"
+  },
   "files": [
     "dist",
     "src"
@@ -14,29 +36,11 @@
     "serve": "npx serve .",
     "test": "echo \"No tests yet\" && exit 0"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/PavlaQ/lrm-here-api-v8.git"
+  "devDependencies": {
+    "esbuild": "^0.27.4"
   },
-  "keywords": [
-    "leaflet",
-    "routing",
-    "here",
-    "lrm",
-    "leaflet-routing-machine",
-    "here-api"
-  ],
-  "author": "Paweł Niekłań",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/PavlaQ/lrm-here-api-v8/issues"
-  },
-  "homepage": "https://github.com/PavlaQ/lrm-here-api-v8#readme",
   "peerDependencies": {
     "leaflet": "^1.0.0",
     "leaflet-routing-machine": "^3.0.0"
-  },
-  "devDependencies": {
-    "esbuild": "^0.27.4"
   }
 }
