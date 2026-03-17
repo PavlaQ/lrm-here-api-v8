@@ -106,7 +106,8 @@
 			avoid: {
 				features: [], // tollRoad, controlledAccessHighway, ferry, tunnel, dirtRoad, carShuttleTrain, difficultTurns
 				areas: [],    // Array of 'bbox:west,south,east,north' or 'polygon:lat1,lng1,lat2,lng2,...'
-				segments: []  // Array of segment IDs
+				segments: [], // Array of segment IDs
+				countries: [] // Array of ISO 3166-1 alpha-3 country codes (e.g., ['CHE', 'AUT']) - soft constraint
 			},
 
 			// Exclude - route will never use these (hard constraint)
@@ -332,6 +333,12 @@
 				params.push('avoid[segments]=' + this.options.avoid.segments.join(','));
 			}
 
+			// Avoid countries (soft constraint - tries to avoid but may use if necessary)
+			var avoidCountries = this._buildAvoidCountries();
+			if (avoidCountries.length > 0) {
+				params.push('avoid[countries]=' + avoidCountries.join(','));
+			}
+
 			// Exclude countries
 			var excludeCountries = this._buildExcludeCountries();
 			if (excludeCountries.length > 0) {
@@ -405,6 +412,17 @@
 			}
 
 			return areas;
+		},
+
+		_buildAvoidCountries: function () {
+			var countries = [];
+
+			// Copy from avoid.countries
+			if (this.options.avoid && this.options.avoid.countries) {
+				countries = countries.concat(this.options.avoid.countries);
+			}
+
+			return countries;
 		},
 
 		_buildExcludeCountries: function () {

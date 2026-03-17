@@ -15,6 +15,7 @@
 		avoidFerries: null,
 		avoidCHE: null,
 		excludeCountries: null,
+		avoidCountries: null,
 		avoidAreas: null,
 		viaPassthrough: null,
 		viaStop: null,
@@ -33,6 +34,7 @@
 		elements.avoidFerries = document.getElementById('opt-avoid-ferries');
 		elements.avoidCHE = document.getElementById('opt-avoid-che');
 		elements.excludeCountries = document.getElementById('opt-exclude-countries');
+		elements.avoidCountries = document.getElementById('opt-avoid-countries');
 		elements.avoidAreas = document.getElementById('opt-avoid-areas');
 		elements.viaPassthrough = document.getElementById('opt-via-passthrough');
 		elements.viaStop = document.getElementById('opt-via-stop');
@@ -90,6 +92,14 @@
 			});
 		}
 
+		var avoidCountries = [];
+		var avoidCountriesInput = elements.avoidCountries.value.trim();
+		if (avoidCountriesInput) {
+			avoidCountries = avoidCountriesInput.split(',').map(function (c) {
+				return c.trim().toUpperCase();
+			});
+		}
+
 		var avoidAreas = [];
 		var areasInput = elements.avoidAreas.value.trim();
 		if (areasInput) {
@@ -111,7 +121,8 @@
 				countries: excludeCountries
 			},
 			avoid: {
-				areas: avoidAreas
+				areas: avoidAreas,
+				countries: avoidCountries
 			},
 			via: {
 				passThrough: elements.viaPassthrough.checked,
@@ -189,7 +200,10 @@
 		if (options.avoidFerries) activeOptions.push('bez promow');
 		if (options.avoidCHE) activeOptions.push('bez CHE');
 		if (options.exclude.countries.length > 0) {
-			activeOptions.push('bez ' + options.exclude.countries.join(','));
+			activeOptions.push('wyklucz: ' + options.exclude.countries.join(','));
+		}
+		if (options.avoid.countries && options.avoid.countries.length > 0) {
+			activeOptions.push('unikaj: ' + options.avoid.countries.join(','));
 		}
 
 		var html = '<div><span class="label">Dystans:</span> <span class="value">' + distance + ' km</span></div>';
