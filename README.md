@@ -1,14 +1,14 @@
 # Leaflet Routing Machine / HERE API v8
 
-Plugin do [Leaflet Routing Machine](https://github.com/perliedman/leaflet-routing-machine) z obsługą [HERE Routing API v8](https://developer.here.com/documentation/routing-api/dev_guide/index.html).
+Plugin for [Leaflet Routing Machine](https://github.com/perliedman/leaflet-routing-machine) with support for [HERE Routing API v8](https://developer.here.com/documentation/routing-api/dev_guide/index.html).
 
-## Instalacja
+## Installation
 
 ```bash
 npm install leaflet-routing-machine-here_v8
 ```
 
-Lub dodaj bezpośrednio w HTML:
+Or include directly in HTML:
 
 ```html
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -16,7 +16,7 @@ Lub dodaj bezpośrednio w HTML:
 <script src="dist/lrm-here.js"></script>
 ```
 
-## Szybki start
+## Quick Start
 
 ```javascript
 var map = L.map('map').setView([52.0, 19.0], 6);
@@ -25,130 +25,130 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
 L.Routing.control({
     waypoints: [
-        L.latLng(52.2297, 21.0122), // Warszawa
+        L.latLng(52.2297, 21.0122), // Warsaw
         L.latLng(50.0647, 19.9450)  // Krakow
     ],
     router: L.Routing.here({
-        apiKey: 'TWOJ_HERE_API_KEY'
+        apiKey: 'YOUR_HERE_API_KEY'
     })
 }).addTo(map);
 ```
 
-## Opcje
+## Options
 
 ```javascript
 L.Routing.here({
-    // Wymagane
+    // Required
     apiKey: 'xxx',
 
-    // Podstawowe
+    // Basic
     transportMode: 'car',      // car, truck, pedestrian, bicycle, scooter
     routingMode: 'fast',       // fast, short
     language: 'pl-PL',         // pl-PL, en-US, de-DE, ...
-    alternatives: 0,           // liczba alternatywnych tras (0-6)
-    timeout: 30000,            // timeout w ms
+    alternatives: 0,           // number of alternative routes (0-6)
+    timeout: 30000,            // timeout in ms
 
-    // Unikanie (soft constraint - stara sie unikac)
-    avoidTolls: false,         // unikaj platnych drog
-    avoidHighways: false,      // unikaj autostrad
-    avoidFerries: false,       // unikaj promow
+    // Avoid (soft constraint - tries to avoid)
+    avoidTolls: false,         // avoid toll roads
+    avoidHighways: false,      // avoid highways
+    avoidFerries: false,       // avoid ferries
 
-    // Wykluczenie krajow (hard constraint - trasa nigdy nie przejdzie)
-    avoidCHE: false,           // wyklucz Szwajcarie
+    // Exclude countries (hard constraint - route will never pass through)
+    avoidCHE: false,           // exclude Switzerland
 
-    // Zaawansowane avoid
+    // Advanced avoid
     avoid: {
         features: [],          // tollRoad, controlledAccessHighway, ferry, tunnel, dirtRoad
         areas: [],             // ['bbox:west,south,east,north', 'polygon:...']
         segments: []           // array of segment IDs
     },
 
-    // Zaawansowane exclude
+    // Advanced exclude
     exclude: {
-        countries: [],         // ['CHE', 'AUT', 'LIE'] - kody ISO 3166-1 alpha-3
-        states: []             // kody stanow
+        countries: [],         // ['CHE', 'AUT', 'LIE'] - ISO 3166-1 alpha-3 codes
+        states: []             // state codes
     },
 
-    // Opcje via points
+    // Via point options
     via: {
-        passThrough: false,    // true = przejazd bez zatrzymania
-        stopDuration: 0        // czas postoju w sekundach
+        passThrough: false,    // true = pass through without stopping
+        stopDuration: 0        // stop duration in seconds
     },
 
-    // Parametry pojazdu
+    // Vehicle parameters
     vehicle: {
-        speedCap: 27.78,       // limit predkosci w m/s (27.78 = 100 km/h)
-        engineSizeCc: 125      // pojemnosc silnika w cc (dla scooter)
+        speedCap: 27.78,       // speed limit in m/s (27.78 = 100 km/h)
+        engineSizeCc: 125      // engine size in cc (for scooter)
     },
 
-    // Parametry skutera (tylko dla transportMode: 'scooter')
+    // Scooter parameters (only for transportMode: 'scooter')
     scooter: {
-        allowHighway: false    // pozwol na autostrady
+        allowHighway: false    // allow highways
     },
 
-    // Parametry ciezarowki (tylko dla transportMode: 'truck')
+    // Truck parameters (only for transportMode: 'truck')
     truck: {
-        height: 4.0,           // wysokosc w metrach
-        width: 2.5,            // szerokosc w metrach
-        length: 16.5,          // dlugosc w metrach
-        grossWeight: 40000,    // masa calkowita w kg
-        weightPerAxle: 10000,  // masa na os w kg
-        axleCount: 5,          // liczba osi
-        trailerCount: 1,       // liczba przyczep
+        height: 4.0,           // height in meters
+        width: 2.5,            // width in meters
+        length: 16.5,          // length in meters
+        grossWeight: 40000,    // total weight in kg
+        weightPerAxle: 10000,  // weight per axle in kg
+        axleCount: 5,          // number of axles
+        trailerCount: 1,       // number of trailers
         type: 'straight',      // straight, tractor
-        shippedHazardousGoods: [], // towary niebezpieczne
-        tunnelCategory: 'B'    // kategoria tunelu
+        shippedHazardousGoods: [], // hazardous goods
+        tunnelCategory: 'B'    // tunnel category
     }
 })
 ```
 
 ## Development
 
-### Wymagania
+### Requirements
 
 - Node.js 18+
 - npm
 
-### Instalacja zaleznosci
+### Install dependencies
 
 ```bash
 npm install
 ```
 
-### Budowanie
+### Build
 
 ```bash
-# Kopiuje src do dist
+# Copy src to dist
 npm run build
 
-# Tworzy wersje minified
+# Create minified version
 npm run build:min
 
-# Obie operacje
+# Both operations
 npm run build:all
 ```
 
-### Uruchomienie example
+### Run example
 
 ```bash
 npm run serve
 ```
 
-Otworz http://localhost:3000/examples/ w przegladarce.
+Open http://localhost:3000/examples/ in your browser.
 
-Example pozwala testowac wszystkie opcje routingu:
-- Definiowanie punktow trasy (waypoints)
-- Wybor transportu i trybu
-- Unikanie oplat, autostrad, promow
-- Wykluczanie krajow (np. Szwajcarii)
-- Opcje via points
+The example allows testing all routing options:
+- Define route waypoints
+- Select transport mode and routing mode
+- Avoid tolls, highways, ferries
+- Exclude countries (e.g., Switzerland)
+- Via point options
 
-### Struktura projektu
+### Project structure
 
 ```
 lrm-here-api-v8/
 ├── src/
-│   └── L.Routing.Here.js    # kod zrodlowy
+│   └── L.Routing.Here.js    # source code
 ├── dist/
 │   ├── lrm-here.js          # bundle
 │   └── lrm-here.min.js      # minified
@@ -161,12 +161,12 @@ lrm-here-api-v8/
 
 ## HERE API Key
 
-Klucz API mozesz uzyskac na [HERE Developer Portal](https://developer.here.com/).
+You can get an API key from [HERE Developer Portal](https://developer.here.com/).
 
-1. Zaloz konto
-2. Utworz projekt
-3. Wygeneruj API Key
+1. Create an account
+2. Create a project
+3. Generate an API Key
 
-## Licencja
+## License
 
 MIT

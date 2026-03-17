@@ -1,6 +1,6 @@
 {
   "name": "leaflet-routing-machine-here_v8",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "HERE Routing API v8 plugin for Leaflet Routing Machine",
   "keywords": [
     "leaflet",
