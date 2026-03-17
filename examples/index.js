@@ -1,6 +1,7 @@
 (function () {
 	var STORAGE_KEY = 'here_api_key';
 	var map, routingControl, currentApiKey;
+	var avoidAreasLayer = null; // Layer group for avoid areas visualization
 
 	// DOM elements
 	var elements = {
@@ -73,6 +74,69 @@
 		}).filter(function (line) {
 			return line !== '';
 		}).join('\n');
+	}
+
+	function drawAvoidAreas(areasArray) {
+		// Remove previous layer
+		if (avoidAreasLayer) {
+			map.removeLayer(avoidAreasLayer);
+		}
+
+		if (!areasArray || areasArray.length === 0) {
+			avoidAreasLayer = null;
+			return;
+		}
+
+		var shapes = [];
+		var style = {
+			color: '#e74c3c',
+			weight: 2,
+			opacity: 0.8,
+			fillColor: '#e74c3c',
+			fillOpacity: 0.2
+		};
+
+		for (var i = 0; i < areasArray.length; i++) {
+			var area = areasArray[i].trim();
+
+			if (area.indexOf('bbox:') === 0) {
+				// Parse bbox:west,south,east,north
+				var bboxCoords = area.substring(5).split(',');
+				if (bboxCoords.length === 4) {
+					var west = parseFloat(bboxCoords[0]);
+					var south = parseFloat(bboxCoords[1]);
+					var east = parseFloat(bboxCoords[2]);
+					var north = parseFloat(bboxCoords[3]);
+
+					if (!isNaN(west) && !isNaN(south) && !isNaN(east) && !isNaN(north)) {
+						var bounds = [[south, west], [north, east]];
+						var rect = L.rectangle(bounds, style);
+						shapes.push(rect);
+					}
+				}
+			} else if (area.indexOf('polygon:') === 0) {
+				// Parse polygon:lat1,lng1,lat2,lng2,...
+				var polyCoords = area.substring(8).split(',');
+				var latlngs = [];
+
+				for (var j = 0; j < polyCoords.length - 1; j += 2) {
+					var lat = parseFloat(polyCoords[j]);
+					var lng = parseFloat(polyCoords[j + 1]);
+					if (!isNaN(lat) && !isNaN(lng)) {
+						latlngs.push([lat, lng]);
+					}
+				}
+
+				if (latlngs.length >= 3) {
+					var polygon = L.polygon(latlngs, style);
+					shapes.push(polygon);
+				}
+			}
+		}
+
+		if (shapes.length > 0) {
+			avoidAreasLayer = L.layerGroup(shapes).addTo(map);
+		}
 	}
 
 	function initMap() {
@@ -165,6 +229,9 @@
 		}
 
 		var options = getRoutingOptions();
+
+		// Draw avoid areas on map
+		drawAvoidAreas(options.avoid.areas);
 
 		routingControl = L.Routing.control({
 			waypoints: currentWaypoints,
